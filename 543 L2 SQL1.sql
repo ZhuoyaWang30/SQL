@@ -28,7 +28,7 @@ SELECT dept_id
 FROM employee
 WHERE title like 'Teller'
 GROUP BY dept_id
-HAVING count(*) > 1;  -- * designates each row.
+HAVING count(*) > 1;  
 
 select *
 from department;
@@ -44,7 +44,7 @@ from employee;
 
 select  e.LNAME, d.NAME, b.name
 from employee e
-        join department d  -- nicknames introduced
+        join department d  
             on e.dept_id = d.dept_id
         join branch b
             on e.assigned_branch_id = b.branch_id;
@@ -55,7 +55,7 @@ as
             
 select  e.LNAME, d.NAME, b.name
 from employee e
-        join department d  -- nicknames introduced
+        join department d  
             on e.dept_id = d.dept_id
         join branch b
             on e.assigned_branch_id = b.branch_id;
