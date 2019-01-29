@@ -1,4 +1,4 @@
--- show employee last names and start dates
+--show employee last names and start dates
 
 SELECT lname, start_date
 FROM employee
@@ -24,6 +24,7 @@ FROM employee
 GROUP BY dept_id;
 
 -- depts with > 1 employee?
+
 SELECT dept_id
 FROM employee
 WHERE title LIKE 'Teller'
@@ -49,7 +50,6 @@ FROM employee e
         JOIN branch b
             ON e.assigned_branch_id = b.branch_id;
             
-                 
 CREATE view emp_full(name,department, branch)
 AS
             
