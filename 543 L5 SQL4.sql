@@ -1,6 +1,3 @@
--- 10/24/18
---two types of functions:
--- 1.  RANK    DENSE_RANK     ROW_NUMBER   CUME_DIST  (giving the rank)
 select product_cd, sum(avail_balance), rank() over (order by sum(avail_balance) desc)
 from account 
 group by product_cd;
