@@ -120,35 +120,35 @@ WHERE avail_balance IN
      (SELECT max(avail_balance) FROM account));
 
 -- (a,b,c,d)
--- want to know, does the table have a pk?
+-- want to know, does the table have a primary key?
 -- are there duplicates in the table? 
-
 -- select *
 -- from t1
 -- group by (a,b,c,d) having count(*) > 1;
 
--- find employee names for operations department.
+-- for example, find employee names for operations department.
 
-select employee.lname
-from employee join department
-on employee.dept_id = department.dept_id
+SELECT employee.lname
+FROM employee 
+JOIN department
+ON employee.dept_id = department.dept_id
+WHERE department.name LIKE 'Operations';
 
-where department.name like 'Operations';
-
--- subquery
-select lname
-from employee
-where dept_id in (select dept_id from department where name like 'Operations');
+-- if using subquery
+SELECT lname
+FROM employee
+WHERE dept_id IN (SELECT dept_id FROM department WHERE name LIKE 'Operations');
      
 -- join employee with itself
-
-select e1.lname, 'VS', e2.lname
-from employee e1 join employee e2
-on e1.emp_id != e2.emp_id;
+SELECT e1.lname, 'VS', e2.lname
+FROM employee e1 
+JOIN employee e2
+ON e1.emp_id != e2.emp_id;
 -- comparing to above
-select e1.lname, 'VS', e2.lname
-from employee e1 join employee e2
-on e1.emp_id > e2.emp_id;
+SELECT e1.lname, 'VS', e2.lname
+FROM employee e1 
+JOIN employee e2
+ON e1.emp_id > e2.emp_id;
 
 select open_emp_id, product_cd
 from account
