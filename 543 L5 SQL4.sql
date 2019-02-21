@@ -1,157 +1,123 @@
-select product_cd, sum(avail_balance), rank() over (order by sum(avail_balance) desc)
-from account 
-group by product_cd;
--- rank() is oracle specific.
-
-select product_cd, trunc(sum(avail_balance),-4), rank() over (order by trunc(sum(avail_balance), -4) desc)
-from account 
-group by product_cd;
+SELECT product_cd, trunc(sum(avail_balance),-4), rank() over (ORDER BY trunc(sum(avail_balance), -4) DESC)
+FROM account 
+GROUP BY product_cd;
 
 
-select product_cd, 
-trunc(sum(avail_balance),-4), 
-row_number() over (order by trunc(sum(avail_balance), -4) desc)  seq,
-dense_rank() over (order by trunc(sum(avail_balance), -4) desc) dense,
-rank() over (order by trunc(sum(avail_balance), -4) desc) rank
-from account 
-group by product_cd;
+SELECT product_cd, 
+       trunc(sum(avail_balance),-4), 
+       row_number() over (ORDER BY trunc(sum(avail_balance), -4) DESC)  seq,
+       dense_rank() over (ORDER BY trunc(sum(avail_balance), -4) DESC) dense,
+       rank() over (ORDER BY trunc(sum(avail_balance), -4) DESC) rank
+FROM account 
+GROUP BY product_cd;
 
--- cumulative distribution = probability 
-select product_cd, sum(avail_balance), cume_dist() over (order by sum(avail_balance) desc)
-from account 
-group by product_cd;
+SELECT product_cd, sum(avail_balance), cume_dist() over (ORDER BY sum(avail_balance) DESC)
+FROM account 
+GROUP BY product_cd;
 
---2. SUM(...)    MAX(....)   AVG(....)  RATIO_TO_REPORT(...)   OVER ()
-select product_cd, sum(avail_balance), 
-sum(sum(avail_balance)) over (order by sum(avail_balance) desc)  cumbalance
-from account 
-group by product_cd;
+SELECT product_cd, sum(avail_balance), sum(sum(avail_balance)) over (ORDER BY sum(avail_balance) DESC)  cumbalance
+FROM account 
+GROUP BY product_cd;
 
-select product_cd, sum(avail_balance), 
-    max(sum(avail_balance)) over (order by sum(avail_balance))  --() after over can be empty
-    
-    from account group by product_cd;
+SELECT product_cd, sum(avail_balance), max(sum(avail_balance)) over (ORDER BY sum(avail_balance))
+FROM account 
+GROUP BY product_cd;
 
-select product_cd, sum(avail_balance), 
-    ratio_to_report(sum(avail_balance)) over ()    --x/sum(x)  () must be empty
- from account group by product_cd
-    order by sum(avail_balance);
+SELECT product_cd, sum(avail_balance), ratio_to_report(sum(avail_balance)) over () 
+FROM account 
+GROUP BY product_cd
+ORDER BY sum(avail_balance);
 
-  -- AVG(...)  OVER(order by .....  Rows x preceding)
-select product_cd, sum(avail_balance), 
-    avg(sum(avail_balance)) over (order by sum(avail_balance) rows 2 preceding)  -- rows 2 preceding means moving average 
-    
-    from account group by product_cd;
---WINDOW FUNCTION???
+-- AVG(...)  OVER(order by .....  Rows x preceding)
+SELECT product_cd, sum(avail_balance), 
+       avg(sum(avail_balance)) over (order by sum(avail_balance) rows 2 preceding) 
+FROM account 
+GROUP BY product_cd;
 
--- PARTITION BY
-select product_cd, to_char(open_date, 'YYYY'), sum(avail_balance)
-from account
-group by product_cd,to_char(open_date, 'YYYY');
+SELECT product_cd, to_char(open_date, 'YYYY'), sum(avail_balance)
+FROM account
+GROUP BY product_cd,to_char(open_date, 'YYYY');
 
-select product_cd,to_char(open_date, 'YYYY'), 
-sum(avail_balance),
-rank() over (partition by to_char(open_date, 'YYYY') order by sum(avail_balance))  -- partition by is placed before order by
-from account
-group by product_cd,to_char(open_date, 'YYYY');
+--year
+SELECT product_cd,to_char(open_date, 'YYYY'), 
+       sum(avail_balance),
+       rank() over (partition by to_char(open_date, 'YYYY') ORDER BY sum(avail_balance))  --partition by is placed before order by
+FROM account
+GROUP BY product_cd,to_char(open_date, 'YYYY');
 
 --branch instead of year
-select product_cd, open_branch_id, sum(avail_balance),
-      rank() over (partition by product_cd order by sum(avail_balance) desc)
-from account
-group by product_cd, open_branch_id;
+SELECT product_cd, open_branch_id, sum(avail_balance),
+       rank() over (partition by product_cd ORDER BY sum(avail_balance) DESC)
+FROM account
+GROUP BY product_cd, open_branch_id;
 
--------
-
----grouping sets
-select product_cd, open_branch_id, sum(avail_balance)
-from account
-group by grouping sets(product_cd, open_branch_id);
+--grouping sets
+SELECT product_cd, open_branch_id, sum(avail_balance)
+FROM account
+GROUP BY grouping sets(product_cd, open_branch_id);
 
 select product_cd, open_branch_id, to_char(open_date, 'Month') Month, sum(avail_balance)
-from account
-group by grouping sets(product_cd, open_branch_id),to_char(open_date, 'Month');
+FROM account
+GROUP BY grouping sets(product_cd, open_branch_id),to_char(open_date, 'Month');
 
 
-select product_cd, open_branch_id, to_char(open_date, 'Month') Month, sum(avail_balance)
-from account
-group by grouping sets(
+SELECT product_cd, open_branch_id, to_char(open_date, 'Month') Month, sum(avail_balance)
+FROM account
+GROUP BY grouping sets(
     (product_cd, open_branch_id,to_char(open_date, 'Month')),
     (product_cd, open_branch_id),
     (product_cd, to_char(open_date, 'Month'))
     );   -- generate 57 rows
 
-select product_cd, open_branch_id, to_char(open_date, 'Month') Month, sum(avail_balance)
-from account
-group by cube(product_cd, open_branch_id,to_char(open_date, 'Month'));  -- generate 97 rows
+SELECT product_cd, open_branch_id, 
+       to_char(open_date,'YYYY') Year,
+       to_char(open_date, 'Month') Month,
+       sum(avail_balance)
+FROM account
+GROUP BY grouping sets(product_cd, open_branch_id), grouping sets( to_char(open_date,'YYYY'), to_char(open_date, 'Month'));
 
-select product_cd, open_branch_id, 
-   to_char(open_date,'YYYY') Year,
-   to_char(open_date, 'Month') Month,
-   sum(avail_balance)
-   
-   from account
-   group by  grouping sets(product_cd, open_branch_id),
-             grouping sets( to_char(open_date,'YYYY'), to_char(open_date, 'Month'));
--- hierarchy 
-
---  manager, branch   vs  product  year  grouping sets for combinations
-
-select  decode(m.lname, null, 'No Manager', m.lname) as "Manager",
-        b.name as "Branch",
-        p.name as "Product",
-        to_char(open_date, 'YYYY') as "Year",
-        to_char(sum(avail_balance), '$9,99,999.00') as "Total"
-
-from account  a
-      join employee e on a.open_emp_id = e.emp_id
-      
-      join branch b on a.open_branch_id = b.branch_id
-      join product p on a.product_cd = p.product_cd
-      left outer join  employee m on e.superior_emp_id = m.emp_id
-
-group by 
-     grouping sets(m.lname,b.name),
-     grouping sets(p.name, to_char(open_date,'YYYY')) ;
+-- manager, branch   vs  product  year  grouping sets for combinations
+SELECT decode(m.lname, null, 'No Manager', m.lname) AS "Manager",
+       b.name AS "Branch",
+       p.name AS "Product",
+       to_char(open_date, 'YYYY') AS "Year",
+       to_char(sum(avail_balance), '$9,99,999.00') AS "Total"
+FROM account  a
+JOIN employee e ON a.open_emp_id = e.emp_id
+JOIN branch b ON a.open_branch_id = b.branch_id
+JOIN product p ON a.product_cd = p.product_cd
+LEFT OUTER JOIN employee m ON e.superior_emp_id = m.emp_id
+GROUP BY grouping sets(m.lname,b.name), grouping sets(p.name, to_char(open_date,'YYYY')) ;
      
 -- hierarchy  emp manager   product product type
-
-select 
-       decode(m.lname, null, 'No Manager', m.lname) as "Manager",
-       e.lname as "Teller",
-       p.product_type_cd as "ProductType",
-       p.name as "Product",
-       sum(avail_balance) as "Total"
-       
-from  account a 
-      join employee e on a.open_emp_id = e.emp_id
-      left outer join employee m on e.superior_emp_id = m.emp_id
-      join product p on a.product_cd = p.product_cd
-group by
-     rollup(m.lname, e.lname),       ---- roll up from right to left
-     rollup(p.product_type_cd, p.name); 
+SELECT decode(m.lname, null, 'No Manager', m.lname) AS "Manager",
+       e.lname AS "Teller",
+       p.product_type_cd AS "ProductType",
+       p.name AS "Product",
+       sum(avail_balance) AS "Total"
+FROM account a 
+JOIN employee e ON a.open_emp_id = e.emp_id
+LEFT OUTER JOIN employee m ON e.superior_emp_id = m.emp_id
+JOIN product p ON a.product_cd = p.product_cd
+GROUP BY rollup(m.lname, e.lname), rollup(p.product_type_cd, p.name);     ---- roll up from right to left
      
-
-
+                                                                      
 ---------------------------
 --miscellaneous queries.
 
 --find the account with the highest balance
-select account_id
-from account
-where avail_balance in
- ( select max(avail_balance) );
+SELECT account_id
+FROM account
+WHERE avail_balance IN (SELECT max(avail_balance));
  
--- find the account with the second highest balance
-
-select account_id
-from account
-where avail_balance in
-(
-select max(avail_balance)
-from account
-where avail_balance >
-( select max(avail_balance) from account ));
+--find the account with the second highest balance
+SELECT account_id
+FROM account
+WHERE avail_balance IN
+     (SELECT max(avail_balance)
+      FROM account
+      WHERE avail_balance >
+     (SELECT max(avail_balance) FROM account));
 
 -- (a,b,c,d)
 -- want to know, does the table have a pk?
