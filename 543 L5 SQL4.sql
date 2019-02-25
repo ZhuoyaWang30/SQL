@@ -150,44 +150,47 @@ FROM employee e1
 JOIN employee e2
 ON e1.emp_id > e2.emp_id;
 
-select open_emp_id, product_cd
-from account
-order by open_emp_id;
+SELECT open_emp_id, product_cd
+FROM account
+ORDER BY open_emp_id;
+      
 -- who has opened more than one kind of account?
 -- count kinds of accounts -- product_cd
 -- count(product_cd) > 1
--- group by 
-select open_emp_id, count(distinct product_cd)
-from account
-group by open_emp_id
-having count(distinct product_cd)>1 ;
+
+SELECT open_emp_id, count(distinct product_cd)
+FROM account
+GROUP BY open_emp_id
+HAVING count(distinct product_cd)>1 ;
 
 -- how many employees opened more than one kind of account?
-select count(*)
-from
-(select open_emp_id, count(distinct product_cd)
-from account
-group by open_emp_id
-having count(distinct product_cd)>1 );
+SELECT count(*)
+FROM
+(SELECT open_emp_id, count(distinct product_cd)
+FROM account
+GROUP BY open_emp_id
+HAVING count(distinct product_cd)>1 );
 -- show the results then count them.
 
 ALTER SESSION SET CURRENT_SCHEMA = msis543_sh;
 
 SELECT channel_desc, country_id, sum(amount_sold) sales$
-FROM sales JOIN  times 
+FROM sales 
+JOIN  times 
 ON sales.time_id = times.time_id
 join customers
 ON sales.cust_id = customers.cust_id
-join channels
+JOIN channels
 ON sales.channel_id = channels.channel_id
 WHERE channels.channel_desc IN ('Direct Sales', 'Internet')
 AND country_id IN ('US', 'UK')
 AND times.calendar_month_desc = '2000-09'
-group by cube(channel_desc, country_id);
+GROUP BY cube(channel_desc, country_id);
 -- cube gives grand total and combination 
 
 SELECT channel_desc, country_id, sum(amount_sold) sales$
-FROM sales JOIN  times 
+FROM sales 
+JOIN  times 
 ON sales.time_id = times.time_id
 join customers
 ON sales.cust_id = customers.cust_id
@@ -196,7 +199,7 @@ ON sales.channel_id = channels.channel_id
 WHERE channels.channel_desc IN ('Direct Sales', 'Internet')
 AND country_id IN ('US', 'UK')
 AND times.calendar_month_desc = '2000-09'
-group by grouping sets(channel_desc, country_id);
+GROUP BY grouping sets(channel_desc, country_id);
 
 
 SELECT channel_desc, country_id, cust_gender,sum(amount_sold) sales$
@@ -211,41 +214,4 @@ AND country_id IN ('US', 'UK')
 AND times.calendar_month_desc = '2000-09'
 GROUP BY grouping sets(country_id, channel_desc), cust_gender;
 -- country to gender and channel to gender
-
-
-SELECT channel_desc, calendar_month_desc, country_id,
-   TO_CHAR(SUM(amount_sold), '$9,999,999,999.99') SALES$ 
-FROM sales JOIN customers
-ON sales.cust_id=customers.cust_id
-JOIN times
-ON sales.time_id=times.time_id
-JOIN channels
-ON sales.channel_id= channels.channel_id
-WHERE   channels.channel_desc IN ('Direct Sales', 'Internet') AND 
-   times.calendar_month_desc IN ('2000-09', '2000-10')
-   AND country_id IN ('UK', 'US')
-GROUP BY channel_desc, rollup(calendar_month_desc, country_id);
-
-
-SELECT channel_desc, calendar_month_desc, country_id, 
-   TO_CHAR(SUM(amount_sold), '9,999,999,999') SALES$ 
-FROM sales JOIN customers
-ON  sales.cust_id=customers.cust_id
-JOIN times
-ON  sales.time_id=times.time_id
-JOIN channels
-on sales.channel_id= channels.channel_id
-WHERE  
-   channels.channel_desc IN ('Direct Sales', 'Internet') AND 
-   times.calendar_month_desc IN ('2000-09', '2000-10')
-   AND country_id IN ('UK', 'US')
-GROUP BY GROUPING SETS((channel_desc, calendar_month_desc, country_id),
-    (channel_desc, country_id), (calendar_month_desc, country_id));
---------------------
--- run query from 543:SQL for OLAP:2:Aggregation Queries: Using Oracle
-
-select * from employee;
---current_schema = msis 543_00;
-
-
 
